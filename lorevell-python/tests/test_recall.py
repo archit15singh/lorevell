@@ -1,7 +1,9 @@
 """Read-only source recall through a real native index and installed CLI."""
 import copy
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -95,14 +97,25 @@ def test_symlinks_cannot_redirect_projection_writes(tmp_path):
     assert victim.read_text() == 'original'
 
 
-def test_actual_cli_reads_stdin_snapshot_and_cross_process_recall(tmp_path):
+def test_absolute_cli_path_supports_cross_process_recall_with_restricted_path(tmp_path):
     cli = str(Path(sys.executable).parent / 'lorevell')
+    empty_bin = tmp_path / 'empty-bin'
+    empty_bin.mkdir()
+    env = dict(os.environ, PATH=str(empty_bin))
+    assert shutil.which('lorevell', path=env['PATH']) is None
+
     source = snapshot(('canary', 'A repeatable canary catches regressions.'))
-    command = [cli, 'recall', 'regressions', '--snapshot', '-', '--cache-dir', str(tmp_path / 'cache'), '--text-only', '--json']
-    first = subprocess.run(command, input=json.dumps(source), text=True, capture_output=True, check=True)
-    second = subprocess.run(command, input=json.dumps(source), text=True, capture_output=True, check=True)
-    assert json.loads(first.stdout)['matches'][0]['id'] == 'canary'
-    assert json.loads(second.stdout)['rebuilt'] is False
+    command = [cli, 'recall', '--snapshot', '-', '--cache-dir', str(tmp_path / 'cache'),
+               '--text-only', '--json']
+    indexed = subprocess.run([*command, '--index-only'], input=json.dumps(source), env=env,
+                             text=True, capture_output=True, check=True)
+    assert json.loads(indexed.stdout)['indexed'] == 1
+    searched = subprocess.run([*command, '--', 'regressions'], input=json.dumps(source), env=env,
+                              text=True, capture_output=True, check=True)
+    result = json.loads(searched.stdout)
+    assert result['matches'][0]['id'] == 'canary'
+    assert result['matches'][0]['source_revision'] == 'r1'
+    assert result['rebuilt'] is False
 
 
 def test_hybrid_backfills_the_same_read_only_snapshot(tmp_path):

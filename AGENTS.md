@@ -24,6 +24,8 @@ Follow existing four-space indentation in Rust and Python; use rustfmt for Rust 
 
 Use Rust's built-in test framework and pytest. Name Python files and functions `test_*`; use descriptive Rust test names. Prefer real SQLite databases: in-memory helpers for Rust and pytest `tmp_path` for Python. Add regression coverage for changed behavior, including CLI output and exit codes. No numeric coverage threshold is configured. Embedding tests may download model files.
 
+When a verified incident exposes a reusable integration gotcha, record the symptom, failing boundary, and verification command in the relevant troubleshooting guide. If an existing check can reproduce the failure with synthetic data, extend it and run it through the affected entry point. For executable discovery problems, [check the failing process's environment](docs/install.md#lorevell-works-in-a-terminal-but-is-unavailable-to-an-agent).
+
 ## Commit & Pull Request Guidelines
 
 History commonly uses Conventional Commits, such as `docs(readme): ...`, `ci(release): ...`, and `chore(release): ...`. Keep commits focused. PRs should explain the behavior or documentation change, link relevant issues, and report validation results. Include screenshots for dashboard changes and compatibility notes for API or schema changes. Run the applicable CI checks before requesting review.

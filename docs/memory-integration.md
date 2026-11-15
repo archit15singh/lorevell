@@ -30,6 +30,8 @@ Notion schemas, a particular user's sync outbox, personal paths, credentials, da
 
 ## Read-only source snapshots
 
+Adapters launch the installed Lorevell CLI. If recall works from a terminal but the adapter cannot find the CLI, [check executable discovery in the adapter's environment](install.md#lorevell-works-in-a-terminal-but-is-unavailable-to-an-agent).
+
 ```bash
 lorevell recall "retry requests" --snapshot snapshot.json --cache-dir ./private-recall-cache --text-only
 lorevell recall --snapshot snapshot.json --cache-dir ./private-recall-cache --index-only --json
